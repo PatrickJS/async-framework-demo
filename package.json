@@ -1,0 +1,14 @@
+{
+  "name": "async-framework-demo",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Dependency-free async framework demo with cacheable server resources, generated component output, streaming, and partial payloads.",
+  "scripts": {
+    "start": "node server.mjs",
+    "generate": "node generate.mjs",
+    "check": "find . -type f \\( -name '*.js' -o -name '*.mjs' \\) -not -path './.git/*' -print0 | xargs -0 -n 1 node --check",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "license": "MIT"
+}
