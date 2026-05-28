@@ -84,7 +84,10 @@
         }
 
         setStatus('Service worker ready. Opening the emulated server routes...');
-        location.replace('./');
+
+        const readyUrl = new URL('./', location.href);
+        readyUrl.searchParams.set('sw', 'ready');
+        location.replace(readyUrl.href);
       }
     </script>
   </body>
