@@ -7,6 +7,19 @@ export const escapeHtml = (value) => {
     .replaceAll("'", '&#39;');
 };
 
+const normalizeBasePath = (basePath = '') => {
+  if (!basePath || basePath === '/') return '';
+
+  return `/${String(basePath).replace(/^\/+|\/+$/g, '')}`;
+};
+
+const demoPath = (basePath, path = '/') => {
+  const prefix = normalizeBasePath(basePath);
+  const suffix = path.startsWith('/') ? path : `/${path}`;
+
+  return `${prefix}${suffix}` || '/';
+};
+
 const cacheStatsHtml = (cacheStats) => {
   return Object.entries(cacheStats)
     .map(([name, stats]) => (
@@ -257,10 +270,16 @@ export const pageShell = ({ body, controls, cacheStats }) => (
   `${pageStartHtml({ controls, cacheStats })}${body}${pageEndHtml({ cacheStats })}`
 );
 
-export const controlsHtml = ({ app, cache, delay, delays, asyncState, ssrState, renderMode, storeName, segment, ids }) => `
-<form class="toolbar" method="get" action="/${escapeHtml(app.slug)}">
+export const controlsHtml = ({ app, basePath = '', cache, delay, delays, asyncState, ssrState, renderMode, storeName, segment, ids, miniWebRuntimeMode }) => {
+  const rootPath = demoPath(basePath, '/');
+  const appPath = demoPath(basePath, `/${app.slug}`);
+  const resetPath = `${rootPath}?nosw=1`;
+
+  return `
+<form class="toolbar" method="get" action="${escapeHtml(appPath)}">
   <div class="preset-row">
-    <a href="/" class="demo-links">All demos</a>
+    <a href="${escapeHtml(rootPath)}" class="demo-links">All demos</a>
+    ${basePath ? `<a href="${escapeHtml(resetPath)}" class="demo-links">Reset service worker</a>` : ''}
     <button type="submit" name="preset" value="client-fetch">Show delays</button>
     <button class="secondary" type="submit" name="preset" value="server-cache">Show cached</button>
   </div>
@@ -327,6 +346,14 @@ export const controlsHtml = ({ app, cache, delay, delays, asyncState, ssrState, 
         Per-product delays
         <input name="delays" placeholder="1:1200,2:250" value="${escapeHtml(Object.entries(delays ?? {}).map(([id, ms]) => `${id}:${ms}`).join(','))}">
       </label>
+      ${basePath ? `<label>
+        MiniWeb runtime
+        <select name="runtime">
+          ${['same-realm', 'iframe'].map((runtime) => (
+            `<option value="${runtime}"${runtime === miniWebRuntimeMode ? ' selected' : ''}>${runtime}</option>`
+          )).join('')}
+        </select>
+      </label>` : ''}
       <label>
         Actions
         <span>
@@ -341,10 +368,11 @@ export const controlsHtml = ({ app, cache, delay, delays, asyncState, ssrState, 
     </div>
   </details>
 </form>`;
+};
 
-export const galleryHtml = ({ apps }) => {
+export const galleryHtml = ({ apps, basePath = '' }) => {
   const cards = apps.map((app) => {
-    const base = `/${escapeHtml(app.slug)}`;
+    const base = demoPath(basePath, `/${app.slug}`);
 
     return [
       '<article class="demo-card">',
@@ -369,6 +397,7 @@ export const galleryHtml = ({ apps }) => {
       '<header>',
       '<h1>Async Framework Demo Gallery</h1>',
       '<p>Each demo uses the same mini framework and keeps author source beside readable generated files.</p>',
+      basePath ? `<p><a href="${escapeHtml(demoPath(basePath, '/architecture.html'))}">Architecture diagram</a> · <a href="${escapeHtml(demoPath(basePath, '/backend-emulation.md'))}">Markdown diagram</a> · <a href="${escapeHtml(demoPath(basePath, '/debug'))}">Debug harness</a> · <a href="${escapeHtml(`${demoPath(basePath, '/')}?nosw=1`)}">Reset service worker</a></p>` : '',
       '</header>',
       `<section class="gallery">${cards}</section>`,
       '</main>',

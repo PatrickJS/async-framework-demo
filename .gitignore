@@ -10,6 +10,9 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 dist/
+dist-pages/
 build/
 tmp/
 *.log
+sw-demo/assets/miniweb/
+sw-demo/vendor/

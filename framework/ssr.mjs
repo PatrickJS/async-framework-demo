@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks';
 import { lintRegistry } from '../registry.mjs';
 import { createRequestRuntime } from './cache-runtime.mjs';
 import {
@@ -48,7 +47,8 @@ const contextHtml = (contexts) => {
   ].join('');
 };
 
-const partialUrlFor = ({ app, cache, delayMs, storeName, segment }, partial) => {
+const partialUrlFor = ({ app, basePath = '', cache, delayMs, storeName, segment, miniWebRuntimeMode }, partial) => {
+  const routePrefix = basePath.replace(/\/$/, '');
   const baseParams = {
     app: app.slug,
     id: partial.id,
@@ -57,6 +57,9 @@ const partialUrlFor = ({ app, cache, delayMs, storeName, segment }, partial) => 
     store: storeName,
     segment,
   };
+  if (miniWebRuntimeMode) {
+    baseParams.runtime = miniWebRuntimeMode;
+  }
   const edgeParams = new URLSearchParams({
     ...baseParams,
     delay: '100',
@@ -68,8 +71,8 @@ const partialUrlFor = ({ app, cache, delayMs, storeName, segment }, partial) => 
   });
 
   return {
-    edge: `/_async/partial/edge-segment?${edgeParams.toString()}`,
-    origin: `/_async/partial/ProductCard?${originParams.toString()}`,
+    edge: `${routePrefix}/_async/partial/edge-segment?${edgeParams.toString()}`,
+    origin: `${routePrefix}/_async/partial/ProductCard?${originParams.toString()}`,
   };
 };
 
@@ -125,9 +128,11 @@ const timingHtml = ({
   durationMs,
   warnings,
   pageCacheHit,
+  miniWebRuntimeMode,
 }) => {
   const rows = [
     ['app', app.slug],
+    ...(miniWebRuntimeMode ? [['MiniWeb runtime', miniWebRuntimeMode]] : []),
     ['cache level', cache],
     ['store adapter', storeName],
     ['async state', asyncState],
@@ -166,6 +171,7 @@ const timingHtml = ({
 
 export const renderProductsRoute = async ({
   app,
+  basePath = '',
   ids,
   cache,
   delayMs,
@@ -175,6 +181,7 @@ export const renderProductsRoute = async ({
   renderMode,
   storeName,
   segment,
+  miniWebRuntimeMode,
 }) => {
   const start = performance.now();
   const lintWarnings = lintRegistry(app);
@@ -185,6 +192,7 @@ export const renderProductsRoute = async ({
     ssrState,
     renderMode,
     segment,
+    miniWebRuntimeMode,
     delays,
   };
   const metrics = createMetrics();
@@ -223,6 +231,7 @@ export const renderProductsRoute = async ({
         durationMs,
         warnings: lintWarnings,
         pageCacheHit: true,
+        miniWebRuntimeMode,
       });
       const productList = app.registry.components[app.page.listTemplate];
       const renderList = await loadSymbol(productList);
@@ -272,6 +281,7 @@ export const renderProductsRoute = async ({
     durationMs,
     warnings: lintWarnings,
     pageCacheHit: false,
+    miniWebRuntimeMode,
   });
 
   const productList = app.registry.components[app.page.listTemplate];
@@ -283,10 +293,12 @@ export const renderProductsRoute = async ({
           partials: replacements,
           urlForPartial: (partial) => partialUrlFor({
             app,
+            basePath,
             cache,
             delayMs,
             storeName,
             segment,
+            miniWebRuntimeMode,
           }, partial),
         })
       : '';
