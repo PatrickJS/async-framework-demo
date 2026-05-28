@@ -4,7 +4,7 @@ import {
   middleware,
   toApp,
 } from './assets/miniweb/index.js';
-import { BASE_PATH, handleDemoRequest } from './router.mjs';
+import { getDemoRoute, handleDemoRequest } from './router.mjs';
 
 const staticWorkerAssets = new Set([
   '/architecture.html',
@@ -19,13 +19,6 @@ const staticWorkerAssets = new Set([
 const miniWebByOrigin = new Map();
 const MINIWEB_RUNTIME_MODES = new Set(['same-realm', 'iframe']);
 
-const pathInsideBase = (pathname) => {
-  if (pathname === BASE_PATH) return '/';
-  if (!pathname.startsWith(`${BASE_PATH}/`)) return null;
-
-  return pathname.slice(BASE_PATH.length) || '/';
-};
-
 const isStaticWorkerAsset = (localPath) => {
   return staticWorkerAssets.has(localPath) || localPath.startsWith('/assets/');
 };
@@ -34,7 +27,7 @@ const shouldHandleWithMiniWeb = (request) => {
   if (request.method !== 'GET') return false;
 
   const url = new URL(request.url);
-  const localPath = pathInsideBase(url.pathname);
+  const localPath = getDemoRoute(url.pathname)?.localPath;
 
   return Boolean(localPath && !isStaticWorkerAsset(localPath));
 };
@@ -79,13 +72,13 @@ const createDemoFetchApp = () => {
   };
 };
 
-const createDemoMiniWeb = async (origin, runtimeMode) => {
+const createDemoMiniWeb = async (origin, basePath, runtimeMode) => {
   const app = createMiniWebApp({
     origin,
     apps: {
       demo: {
         app: createDemoFetchApp(),
-        basePath: `${BASE_PATH}/`,
+        basePath: `${basePath}/`,
         runtime: 'demo',
       },
     },
@@ -107,11 +100,11 @@ const createDemoMiniWeb = async (origin, runtimeMode) => {
   return createMiniWeb(app);
 };
 
-const getDemoMiniWeb = async (origin, runtimeMode) => {
-  const key = `${origin}:${runtimeMode}`;
+const getDemoMiniWeb = async (origin, basePath, runtimeMode) => {
+  const key = `${origin}:${basePath}:${runtimeMode}`;
 
   if (!miniWebByOrigin.has(key)) {
-    miniWebByOrigin.set(key, createDemoMiniWeb(origin, runtimeMode));
+    miniWebByOrigin.set(key, createDemoMiniWeb(origin, basePath, runtimeMode));
   }
 
   return miniWebByOrigin.get(key);
@@ -121,8 +114,9 @@ export const handleMiniWebDemoRequest = async (request) => {
   if (!shouldHandleWithMiniWeb(request)) return null;
 
   const url = new URL(request.url);
+  const route = getDemoRoute(url.pathname);
   const runtimeMode = runtimeModeForRequest(request);
-  const web = await getDemoMiniWeb(url.origin, runtimeMode);
+  const web = await getDemoMiniWeb(url.origin, route.basePath, runtimeMode);
 
   return web.fetch(request);
 };

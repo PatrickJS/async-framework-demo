@@ -20,11 +20,18 @@ assert.match(gallery, /Async Framework Demo Gallery/);
 assert.match(gallery, /href="\/sw-demo\/product-cache"/);
 assert.match(gallery, /Reset service worker/);
 
+const projectGallery = await readText('/async-framework-demo/sw-demo/');
+assert.match(projectGallery, /Async Framework Demo Gallery/);
+assert.match(projectGallery, /href="\/async-framework-demo\/sw-demo\/product-cache"/);
+
 const debug = await readText('/sw-demo/debug');
 assert.match(debug, /Service Worker Debug Harness/);
 assert.match(debug, /id="run-debug"/);
 assert.match(debug, /\/sw-demo\/_async\/partial\/ProductCard/);
 assert.match(debug, /async-framework-demo:version/);
+
+const projectDebug = await readText('/async-framework-demo/sw-demo/debug');
+assert.match(projectDebug, /\/async-framework-demo\/sw-demo\/_async\/partial\/ProductCard/);
 
 const page = await readText('/sw-demo/product-cache?mode=wait&cache=component&delay=0&clear=1');
 assert.match(page, /data-demo-app="product-cache"/);
@@ -33,6 +40,13 @@ assert.match(page, /Current in-memory cache sizes/);
 
 const iframePage = await readText('/sw-demo/product-cache?runtime=iframe&mode=wait&cache=component&delay=0&clear=1');
 assert.match(iframePage, /MiniWeb runtime<\/strong><br>iframe/);
+
+const projectPage = await readText('/async-framework-demo/sw-demo/product-cache?runtime=iframe&mode=wait&cache=component&delay=0&clear=1');
+assert.match(projectPage, /MiniWeb runtime<\/strong><br>iframe/);
+assert.match(projectPage, /action="\/async-framework-demo\/sw-demo\/product-cache"/);
+
+const projectFetchPage = await readText('/async-framework-demo/sw-demo/product-cache?runtime=iframe&mode=fetch&cache=component&delay=0&clear=1');
+assert.match(projectFetchPage, /\/async-framework-demo\/sw-demo\/_async\/partial\/ProductCard/);
 
 const partialResponse = await handleMiniWebDemoRequest(request(
   '/sw-demo/_async/partial/ProductCard?app=component-partials&id=pending-ProductCardTemplate-1&productId=1&cache=request&store=memory&segment=free&delay=0',

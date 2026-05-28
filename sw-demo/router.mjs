@@ -16,6 +16,7 @@ import { defaultApp, demoApps, getDemoApp } from './registry.mjs';
 
 export const DEMO_SW_VERSION = '2026-05-28-2';
 export const BASE_PATH = '/sw-demo';
+const BASE_PATH_MARKER = `${BASE_PATH}/`;
 
 const DEFAULT_DELAY_MS = 1000;
 const PENDING_PRESET_DELAY_MS = 3000;
@@ -178,13 +179,33 @@ const withPreset = (options, preset) => {
   return options;
 };
 
-const parseRequestOptions = (url, app) => {
+export const getDemoRoute = (pathname) => {
+  if (pathname === BASE_PATH || pathname.endsWith(BASE_PATH)) {
+    return {
+      basePath: pathname,
+      localPath: '/',
+    };
+  }
+
+  const markerIndex = pathname.indexOf(BASE_PATH_MARKER);
+
+  if (markerIndex === -1) return null;
+
+  const basePath = pathname.slice(0, markerIndex + BASE_PATH.length);
+
+  return {
+    basePath,
+    localPath: pathname.slice(basePath.length) || '/',
+  };
+};
+
+const parseRequestOptions = (url, app, basePath) => {
   const defaults = app.defaults;
   const delay = Number(url.searchParams.get('delay') || defaults.delayMs || DEFAULT_DELAY_MS);
   const delayMs = Number.isFinite(delay) ? Math.max(0, Math.min(5000, delay)) : DEFAULT_DELAY_MS;
   const options = {
     app,
-    basePath: BASE_PATH,
+    basePath,
     cache: normalizeCacheMode(url.searchParams.get('cache') || defaults.cache),
     delayMs,
     delays: parseDelays(url.searchParams.get('delays'), defaults.delays),
@@ -225,7 +246,7 @@ const parsePartialOptions = (url) => {
 const controlsFor = (options) => {
   return controlsHtml({
     app: options.app,
-    basePath: BASE_PATH,
+    basePath: options.basePath,
     cache: options.cache,
     delay: options.delayMs,
     delays: options.delays,
@@ -263,7 +284,7 @@ const jsonResponse = (payload, headers = {}) => {
   });
 };
 
-const resetPageHtml = () => `<!doctype html>
+const resetPageHtml = (basePath) => `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -280,7 +301,7 @@ const resetPageHtml = () => `<!doctype html>
     <main>
       <h1>Resetting service worker demo</h1>
       <p id="status">Removing the worker and demo caches...</p>
-      <p><a href="${BASE_PATH}/">Start demo again</a></p>
+      <p><a href="${basePath}/">Start demo again</a></p>
     </main>
     <script type="module">
       const status = document.getElementById('status');
@@ -297,7 +318,7 @@ const resetPageHtml = () => `<!doctype html>
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
         await Promise.all(registrations
-          .filter((registration) => registration.scope.includes('${BASE_PATH}/'))
+          .filter((registration) => registration.scope.includes('${basePath}/'))
           .map((registration) => registration.unregister()));
       }
 
@@ -307,9 +328,9 @@ const resetPageHtml = () => `<!doctype html>
   </body>
 </html>`;
 
-const debugPageHtml = () => {
-  const productUrl = `${BASE_PATH}/_async/partial/ProductCard?app=component-partials&id=pending-ProductCardTemplate-1&productId=1&cache=request&store=memory&segment=free&delay=0`;
-  const edgeUrl = `${BASE_PATH}/_async/partial/edge-segment?app=segment-vary&id=pending-ProductCardTemplate-1&productId=1&cache=request&store=memory&segment=pro&delay=0`;
+const debugPageHtml = (basePath) => {
+  const productUrl = `${basePath}/_async/partial/ProductCard?app=component-partials&id=pending-ProductCardTemplate-1&productId=1&cache=request&store=memory&segment=free&delay=0`;
+  const edgeUrl = `${basePath}/_async/partial/edge-segment?app=segment-vary&id=pending-ProductCardTemplate-1&productId=1&cache=request&store=memory&segment=pro&delay=0`;
 
   return `<!doctype html>
 <html lang="en">
@@ -333,8 +354,8 @@ const debugPageHtml = () => {
   <body>
     <main>
       <nav>
-        <a class="secondary" href="${BASE_PATH}/">All demos</a>
-        <a class="secondary" href="${BASE_PATH}/?nosw=1">Reset service worker</a>
+        <a class="secondary" href="${basePath}/">All demos</a>
+        <a class="secondary" href="${basePath}/?nosw=1">Reset service worker</a>
       </nav>
       <section class="panel">
         <h1>Service Worker Debug Harness</h1>
@@ -393,7 +414,7 @@ const debugPageHtml = () => {
         status.textContent = 'Running service worker checks...';
         setCheck('controller', navigator.serviceWorker?.controller ? 'controlled' : 'missing');
 
-        const registration = await navigator.serviceWorker?.getRegistration('${BASE_PATH}/');
+        const registration = await navigator.serviceWorker?.getRegistration('${basePath}/');
         const version = await workerVersion();
         const product = await readJson(productUrl);
         const edge = await readJson(edgeUrl);
@@ -574,13 +595,6 @@ const renderPartialResponse = async (url) => {
   };
 };
 
-const pathInsideBase = (pathname) => {
-  if (pathname === BASE_PATH) return '/';
-  if (!pathname.startsWith(`${BASE_PATH}/`)) return null;
-
-  return pathname.slice(BASE_PATH.length) || '/';
-};
-
 const shouldPassThrough = (localPath) => {
   return [
     '/architecture.html',
@@ -595,22 +609,23 @@ export const handleDemoRequest = async (request) => {
   if (request.method !== 'GET') return null;
 
   const url = new URL(request.url);
-  const localPath = pathInsideBase(url.pathname);
+  const route = getDemoRoute(url.pathname);
+  const localPath = route?.localPath;
 
   if (!localPath || shouldPassThrough(localPath)) return null;
 
   if (url.searchParams.get('nosw') === '1' || localPath === '/reset') {
-    return htmlResponse(resetPageHtml());
+    return htmlResponse(resetPageHtml(route.basePath));
   }
 
   if (localPath === '/debug') {
-    return htmlResponse(debugPageHtml());
+    return htmlResponse(debugPageHtml(route.basePath));
   }
 
   if (localPath === '/') {
     return htmlResponse(galleryHtml({
       apps: demoApps,
-      basePath: BASE_PATH,
+      basePath: route.basePath,
     }));
   }
 
@@ -642,7 +657,7 @@ export const handleDemoRequest = async (request) => {
     });
   }
 
-  const options = parseRequestOptions(url, app);
+  const options = parseRequestOptions(url, app, route.basePath);
 
   if (options.renderMode === 'stream') {
     return renderStreamResponse(options);
