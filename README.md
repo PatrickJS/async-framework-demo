@@ -30,7 +30,7 @@ Open:
 http://127.0.0.1:4328/sw-demo/
 ```
 
-The first load installs `sw-demo/service-worker.mjs`, then the worker sends
+The first load installs the deployed `service-worker.js`, then the worker sends
 `/sw-demo/*` demo routes through static MiniWeb assets generated from the
 installed `@async/miniweb` package. Use the **Reset service worker** link or
 visit `/sw-demo/?nosw=1` to unregister the worker and clear demo caches before
@@ -68,17 +68,23 @@ Actions**.
 ## File Map
 
 ```txt
-framework/
-  shared demo runtime
+src/app/
+  route table, app registry, cache config, optimizer CLI, and examples
 
-apps/
-  multiple examples using the same runtime
+src/server/
+  local Node adapter
+
+src/browser/
+  static bootstrap page, service worker, MiniWeb bridge, and browser docs
+
+src/framework/
+  shared demo runtime
 ```
 
 Each app keeps author source beside readable generated output:
 
 ```txt
-apps/product-cache/
+src/app/examples/product-cache/
   component.js
   generated/
     server_segment.js

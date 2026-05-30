@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GitHub Pages Backend Emulation Diagram</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172033;
+        --muted: #5f6b7a;
+        --line: #d9dee8;
+        --panel: #ffffff;
+        --page: #f6f7f9;
+        --accent: #1f6feb;
+        --server: #0f6b4f;
+        --browser: #6f4cc3;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 40px;
+      }
+
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      nav a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 7px 10px;
+        border: 1px solid #8b96a8;
+        border-radius: 6px;
+        background: var(--panel);
+        color: var(--ink);
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 32px;
+        line-height: 1.15;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 21px;
+      }
+
+      p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .summary {
+        max-width: 780px;
+        margin-bottom: 22px;
+      }
+
+      .diagram {
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        margin: 20px 0;
+      }
+
+      svg {
+        display: block;
+        min-width: 940px;
+        width: 100%;
+        height: auto;
+      }
+
+      .box {
+        fill: #fff;
+        stroke: var(--line);
+        stroke-width: 1.5;
+      }
+
+      .box.browser {
+        stroke: var(--browser);
+      }
+
+      .box.server {
+        stroke: var(--server);
+      }
+
+      .box.static {
+        stroke: var(--accent);
+      }
+
+      .title {
+        fill: var(--ink);
+        font-size: 17px;
+        font-weight: 750;
+      }
+
+      .label {
+        fill: var(--muted);
+        font-size: 13px;
+      }
+
+      .arrow {
+        fill: none;
+        stroke: #687386;
+        stroke-width: 2;
+        marker-end: url(#arrow);
+      }
+
+      .swimlanes {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .lane {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 14px;
+      }
+
+      .lane strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .lane code {
+        overflow-wrap: anywhere;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: #f9fafc;
+        padding: 1px 4px;
+      }
+
+      .list {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      @media (max-width: 800px) {
+        main {
+          width: min(100% - 20px, 1080px);
+          padding-top: 18px;
+        }
+
+        h1 {
+          font-size: 26px;
+        }
+
+        .swimlanes {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="./">All demos</a>
+        <a href="./backend-emulation.md">Markdown diagram</a>
+        <a href="./debug">Debug harness</a>
+        <a href="./?nosw=1">Reset service worker</a>
+      </nav>
+
+      <header class="summary">
+        <h1>GitHub Pages Backend Emulation</h1>
+        <p>The hosted page stays static, but the service worker takes ownership of demo URLs under <code>/sw-demo/</code> and returns the same route shapes that the Node server returns locally.</p>
+      </header>
+
+      <section class="diagram" aria-label="Request flow diagram">
+        <svg viewBox="0 0 1040 610" role="img" aria-labelledby="diagram-title diagram-desc">
+          <title id="diagram-title">Service worker backend emulation request flow</title>
+          <desc id="diagram-desc">The browser loads static files from GitHub Pages, then routes demo page and partial requests through the service worker, which uses browser memory for demo cache state.</desc>
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#687386"></path>
+            </marker>
+          </defs>
+
+          <rect x="28" y="35" width="280" height="530" rx="8" fill="#fbfbfd" stroke="#d9dee8"></rect>
+          <text x="52" y="70" class="title">Browser tab</text>
+          <text x="52" y="94" class="label">User sees the normal demo UI</text>
+
+          <rect x="380" y="35" width="280" height="530" rx="8" fill="#fbfbfd" stroke="#d9dee8"></rect>
+          <text x="404" y="70" class="title">Service worker</text>
+          <text x="404" y="94" class="label">Browser-side server emulator</text>
+
+          <rect x="732" y="35" width="280" height="530" rx="8" fill="#fbfbfd" stroke="#d9dee8"></rect>
+          <text x="756" y="70" class="title">GitHub Pages</text>
+          <text x="756" y="94" class="label">Static files only</text>
+
+          <rect class="box browser" x="58" y="135" width="220" height="82" rx="8"></rect>
+          <text x="78" y="166" class="title">1. Open /sw-demo/</text>
+          <text x="78" y="190" class="label">Initial static page bootstraps</text>
+
+          <rect class="box static" x="762" y="135" width="220" height="82" rx="8"></rect>
+          <text x="782" y="166" class="title">2. Static assets</text>
+          <text x="782" y="190" class="label">HTML, JS modules, generated files</text>
+
+          <rect class="box server" x="410" y="135" width="220" height="82" rx="8"></rect>
+          <text x="430" y="166" class="title">3. Install worker</text>
+          <text x="430" y="190" class="label">skipWaiting + clients.claim</text>
+
+          <rect class="box browser" x="58" y="275" width="220" height="96" rx="8"></rect>
+          <text x="78" y="306" class="title">4. Demo request</text>
+          <text x="78" y="330" class="label">/sw-demo/product-cache</text>
+          <text x="78" y="350" class="label">?cache=page&amp;segment=pro</text>
+
+          <rect class="box server" x="410" y="275" width="220" height="96" rx="8"></rect>
+          <text x="430" y="306" class="title">5. Route + render</text>
+          <text x="430" y="330" class="label">Parse query params</text>
+          <text x="430" y="350" class="label">Call shared demo runtime</text>
+
+          <rect class="box server" x="410" y="420" width="220" height="96" rx="8"></rect>
+          <text x="430" y="451" class="title">6. Emulated state</text>
+          <text x="430" y="475" class="label">In-worker memory cache</text>
+          <text x="430" y="495" class="label">Timers mimic resource delay</text>
+
+          <rect class="box browser" x="58" y="420" width="220" height="96" rx="8"></rect>
+          <text x="78" y="451" class="title">7. Partial requests</text>
+          <text x="78" y="475" class="label">/_async/partial/ProductCard</text>
+          <text x="78" y="495" class="label">/_async/partial/edge-segment</text>
+
+          <rect class="box static" x="762" y="420" width="220" height="96" rx="8"></rect>
+          <text x="782" y="451" class="title">No backend process</text>
+          <text x="782" y="475" class="label">Pages never runs Node</text>
+          <text x="782" y="495" class="label">Worker returns responses</text>
+
+          <path class="arrow" d="M278 176 H762"></path>
+          <path class="arrow" d="M762 203 H630"></path>
+          <path class="arrow" d="M168 217 V275"></path>
+          <path class="arrow" d="M278 323 H410"></path>
+          <path class="arrow" d="M520 371 V420"></path>
+          <path class="arrow" d="M410 468 H278"></path>
+          <path class="arrow" d="M168 420 V371"></path>
+          <path class="arrow" d="M630 468 H762"></path>
+        </svg>
+      </section>
+
+      <section class="swimlanes">
+        <div class="lane">
+          <strong>What GitHub Pages does</strong>
+          <ul class="list">
+            <li>Hosts static files from the repo.</li>
+            <li>Serves the worker module and generated demo modules.</li>
+            <li>Does not run Node, hold memory, or stream from a server.</li>
+          </ul>
+        </div>
+
+        <div class="lane">
+          <strong>What the worker mimics</strong>
+          <ul class="list">
+            <li>Query-param driven rendering.</li>
+            <li><code>/_async/partial/ProductCard</code> JSON.</li>
+            <li><code>/_async/partial/edge-segment</code> JSON.</li>
+            <li>Demo cache counters, delays, and stream-like chunking.</li>
+          </ul>
+        </div>
+
+        <div class="lane">
+          <strong>What remains different</strong>
+          <ul class="list">
+            <li>Cache state is per browser, not shared server state.</li>
+            <li>The real proof path is still <code>src/server/node.js</code>.</li>
+            <li>The reset URL clears stale worker state for debugging.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

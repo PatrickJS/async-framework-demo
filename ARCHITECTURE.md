@@ -19,7 +19,7 @@ Out-of-order streaming in this demo means:
 
 ### Request Flow
 
-`/streaming?mode=stream&state=pending&ssr=pending` enters the streaming path in [server.mjs](server.mjs).
+`/streaming?mode=stream&state=pending&ssr=pending` enters the streaming path in [src/server/node.js](src/server/node.js).
 
 1. `renderProductsRoute(...)` returns initial pending markup plus replacement descriptors.
 2. The server writes shell + initial HTML first.
@@ -29,9 +29,9 @@ Out-of-order streaming in this demo means:
 
 Code locations:
 
-- response loop: [server.mjs](server.mjs)
-- pending resource promises: [framework/cache-runtime.mjs](framework/cache-runtime.mjs)
-- streamed template swap script: [framework/html.mjs](framework/html.mjs)
+- response loop: [src/server/node.js](src/server/node.js)
+- pending resource promises: [src/framework/cache-runtime.js](src/framework/cache-runtime.js)
+- streamed template swap script: [src/framework/html.js](src/framework/html.js)
 
 For non-streaming behavior, use `mode=wait`. That path waits for data to resolve before returning the page.
 
@@ -64,8 +64,8 @@ That is generated at render time in `createResumeContext(...)`.
 
 Code locations:
 
-- context + closures: [framework/cache-runtime.mjs](framework/cache-runtime.mjs)
-- context display in UI: [framework/ssr.mjs](framework/ssr.mjs)
+- context + closures: [src/framework/cache-runtime.js](src/framework/cache-runtime.js)
+- context display in UI: [src/framework/ssr.js](src/framework/ssr.js)
 
 `HTML` alone is not enough when a runtime needs async boundary replacement and resumable state.
 
@@ -74,7 +74,7 @@ Code locations:
 Each app has one author file plus generated files:
 
 ```txt
-apps/<app-name>/
+src/app/examples/<app-name>/
   component.js
   generated/
     server_segment.js
@@ -105,9 +105,9 @@ The app registry loads those split files directly.
 
 Code locations:
 
-- registry resource loaders: [apps/create-product-app.mjs](apps/create-product-app.mjs)
-- optimizer output generator: [framework/simple-optimizer.mjs](framework/simple-optimizer.mjs)
-- optimizer CLI: [generate.mjs](generate.mjs)
+- registry resource loaders: [src/app/examples/create-product-app.js](src/app/examples/create-product-app.js)
+- optimizer output generator: [src/framework/simple-optimizer.js](src/framework/simple-optimizer.js)
+- optimizer CLI: [src/app/generate.js](src/app/generate.js)
 
 ## Rebuild Generated Files
 
@@ -120,5 +120,5 @@ npm run generate
 Generate one app:
 
 ```bash
-node generate.mjs --app=product-cache
+node src/app/generate.js --app=product-cache
 ```

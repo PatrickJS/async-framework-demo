@@ -5,14 +5,14 @@
   "type": "module",
   "description": "Async framework demo with cacheable server resources, generated component output, streaming, and MiniWeb-backed static routes.",
   "scripts": {
-    "start": "node server.mjs",
-    "prepare:static": "node scripts/copy-miniweb-assets.mjs",
-    "start:static": "npm run prepare:static && node scripts/static-server.mjs",
-    "build:pages": "node scripts/build-pages.mjs",
-    "generate": "node generate.mjs",
-    "check": "find . -type f \\( -name '*.js' -o -name '*.mjs' \\) -not -path './.git/*' -not -path './node_modules/*' -not -path './dist-pages/*' -not -path './sw-demo/assets/miniweb/*' -print0 | xargs -0 -n 1 node --check",
-    "smoke": "node scripts/smoke.mjs",
-    "smoke:sw": "npm run prepare:static && node scripts/sw-smoke.mjs"
+    "start": "node src/server/node.js",
+    "prepare:static": "node scripts/copy-miniweb-assets.js",
+    "start:static": "npm run prepare:static && node scripts/static-server.js",
+    "build:pages": "node scripts/build-pages.js",
+    "generate": "node src/app/generate.js",
+    "check": "find . -type f -name '*.js' -not -path './.git/*' -not -path './node_modules/*' -not -path './dist-pages/*' -not -path './src/browser/assets/miniweb/*' -print0 | xargs -0 -n 1 node --check",
+    "smoke": "node scripts/smoke.js",
+    "smoke:sw": "npm run prepare:static && node scripts/sw-smoke.js"
   },
   "license": "MIT",
   "dependencies": {

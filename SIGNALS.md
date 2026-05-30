@@ -15,7 +15,7 @@ product.value = nextResourceState;
 
 ## Runtime Pieces
 
-The signal runtime lives in [framework/signals.mjs](framework/signals.mjs).
+The signal runtime lives in [src/framework/signals.js](src/framework/signals.js).
 
 It exposes:
 

@@ -14,5 +14,5 @@ dist-pages/
 build/
 tmp/
 *.log
-sw-demo/assets/miniweb/
-sw-demo/vendor/
+src/browser/assets/miniweb/
+src/browser/vendor/
