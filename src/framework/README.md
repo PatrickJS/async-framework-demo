@@ -6,4 +6,30 @@ The framework is intentionally small and dependency-free. It loads a demo app re
 
 The framework is here so the app folders can stay focused on the concept they demonstrate instead of repeating server and cache plumbing.
 
-It also contains `simple-optimizer.js`, which turns app `component.js` metadata into readable generated files. The optimizer is called by `../app/generate.js`.
+## Files
+
+```txt
+cache-policy.js
+  Merges generated cache hints with server-only user cache config.
+
+cache-runtime.js
+  Request runtime, cache flags, resource state, dedupe, and cache statistics.
+
+cache-stores.js
+  In-memory and Redis-like demo store implementations.
+
+html.js
+  HTML shell, controls, gallery, client swap, and streamed partial helpers.
+
+signals.js
+  Tiny signal/effect runtime used by generated templates.
+
+simple-optimizer.js
+  Turns app component metadata into readable generated files.
+
+ssr.js
+  Renders app routes, component partials, timing metrics, and resume context.
+```
+
+Keep this layer adapter-neutral. Node-specific behavior belongs in
+`src/server/`, and service-worker/MiniWeb behavior belongs in `src/browser/`.
