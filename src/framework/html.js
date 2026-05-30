@@ -370,7 +370,7 @@ export const controlsHtml = ({ app, basePath = '', cache, delay, delays, asyncSt
 </form>`;
 };
 
-export const galleryHtml = ({ apps, basePath = '' }) => {
+export const galleryHtml = ({ apps, basePath = '', showBrowserLinks = false }) => {
   const cards = apps.map((app) => {
     const base = demoPath(basePath, `/${app.slug}`);
 
@@ -397,7 +397,7 @@ export const galleryHtml = ({ apps, basePath = '' }) => {
       '<header>',
       '<h1>Async Framework Demo Gallery</h1>',
       '<p>Each demo uses the same mini framework and keeps author source beside readable generated files.</p>',
-      basePath ? `<p><a href="${escapeHtml(demoPath(basePath, '/architecture.html'))}">Architecture diagram</a> · <a href="${escapeHtml(demoPath(basePath, '/backend-emulation.md'))}">Markdown diagram</a> · <a href="${escapeHtml(demoPath(basePath, '/debug'))}">Debug harness</a> · <a href="${escapeHtml(`${demoPath(basePath, '/')}?nosw=1`)}">Reset service worker</a></p>` : '',
+      showBrowserLinks ? `<p><a href="${escapeHtml(demoPath(basePath, '/architecture.html'))}">Architecture diagram</a> · <a href="${escapeHtml(demoPath(basePath, '/backend-emulation.md'))}">Markdown diagram</a> · <a href="${escapeHtml(demoPath(basePath, '/debug'))}">Debug harness</a> · <a href="${escapeHtml(`${demoPath(basePath, '/')}?nosw=1`)}">Reset service worker</a></p>` : '',
       '</header>',
       `<section class="gallery">${cards}</section>`,
       '</main>',

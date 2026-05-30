@@ -193,7 +193,7 @@
 
       <header class="summary">
         <h1>GitHub Pages Backend Emulation</h1>
-        <p>The hosted page stays static, but the service worker takes ownership of demo URLs under <code>/sw-demo/</code> and returns the same route shapes that the Node server returns locally.</p>
+        <p>The hosted page stays static, but the service worker takes ownership of site-root demo URLs and returns the same route shapes that the Node server returns locally.</p>
       </header>
 
       <section class="diagram" aria-label="Request flow diagram">
@@ -219,7 +219,7 @@
           <text x="756" y="94" class="label">Static files only</text>
 
           <rect class="box browser" x="58" y="135" width="220" height="82" rx="8"></rect>
-          <text x="78" y="166" class="title">1. Open /sw-demo/</text>
+          <text x="78" y="166" class="title">1. Open /</text>
           <text x="78" y="190" class="label">Initial static page bootstraps</text>
 
           <rect class="box static" x="762" y="135" width="220" height="82" rx="8"></rect>
@@ -232,7 +232,7 @@
 
           <rect class="box browser" x="58" y="275" width="220" height="96" rx="8"></rect>
           <text x="78" y="306" class="title">4. Demo request</text>
-          <text x="78" y="330" class="label">/sw-demo/product-cache</text>
+          <text x="78" y="330" class="label">/product-cache</text>
           <text x="78" y="350" class="label">?cache=page&amp;segment=pro</text>
 
           <rect class="box server" x="410" y="275" width="220" height="96" rx="8"></rect>

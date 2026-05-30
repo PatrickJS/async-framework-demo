@@ -601,6 +601,7 @@ export const handleDemoRequest = async (request) => {
     return htmlResponse(galleryHtml({
       apps: demoApps,
       basePath: route.basePath,
+      showBrowserLinks: true,
     }));
   }
 

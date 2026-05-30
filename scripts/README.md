@@ -15,7 +15,7 @@ smoke.js
   Runs Node-server smoke checks against src/server/node.js.
 
 static-server.js
-  Serves the static browser demo locally at /sw-demo/.
+  Serves the static browser demo locally at /.
 
 sw-smoke.js
   Exercises the MiniWeb-backed service-worker route handler without a browser.

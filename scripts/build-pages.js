@@ -35,26 +35,12 @@ const copyFile = async (source, target) => {
   await fs.copyFile(source, target);
 };
 
-const rootIndexHtml = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="refresh" content="0; url=./sw-demo/">
-    <title>Async Framework Demo</title>
-  </head>
-  <body>
-    <p><a href="./sw-demo/">Open Async Framework Demo</a></p>
-  </body>
-</html>
-`;
-
 await fs.rm(outputRoot, { recursive: true, force: true });
 await fs.mkdir(outputRoot, { recursive: true });
 
 await copyTree(
   path.join(repoRoot, 'src', 'browser'),
-  path.join(outputRoot, 'sw-demo'),
+  outputRoot,
   (relativePath) => {
     return (
       relativePath !== 'assets'
@@ -76,7 +62,6 @@ for (const file of [
   await copyFile(path.join(repoRoot, file), path.join(outputRoot, file));
 }
 
-await fs.writeFile(path.join(outputRoot, 'index.html'), rootIndexHtml);
-await copyMiniWebAssets(path.join(outputRoot, 'sw-demo', 'assets', 'miniweb'));
+await copyMiniWebAssets(path.join(outputRoot, 'assets', 'miniweb'));
 
 console.log(`built GitHub Pages artifact in ${path.relative(repoRoot, outputRoot)}`);

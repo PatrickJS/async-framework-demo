@@ -26,12 +26,51 @@ const parsePort = () => {
   return Number(arg.slice('--port='.length)) || DEFAULT_PORT;
 };
 
+const browserStaticFiles = new Set([
+  '/architecture.html',
+  '/backend-emulation.md',
+  '/index.html',
+  '/miniweb.js',
+  '/registry.js',
+  '/router.js',
+  '/service-worker.js',
+]);
+
+const sourcePathnameFor = (pathname) => {
+  const projectPrefix = '/async-framework-demo';
+
+  if (pathname === '/') return '/src/browser/index.html';
+
+  if (pathname === projectPrefix || pathname === `${projectPrefix}/`) {
+    return '/src/browser/index.html';
+  }
+
+  if (pathname.startsWith(`${projectPrefix}/`)) {
+    const localPath = pathname.slice(projectPrefix.length);
+
+    if (localPath.startsWith('/app/')) return `/src${localPath}`;
+    if (localPath.startsWith('/framework/')) return `/src${localPath}`;
+
+    if (browserStaticFiles.has(localPath) || localPath.startsWith('/assets/')) {
+      return `/src/browser${localPath}`;
+    }
+
+    return '/src/browser/index.html';
+  }
+
+  if (browserStaticFiles.has(pathname) || pathname.startsWith('/assets/')) {
+    return `/src/browser${pathname}`;
+  }
+
+  if (pathname.startsWith('/app/')) return `/src${pathname}`;
+  if (pathname.startsWith('/framework/')) return `/src${pathname}`;
+
+  return pathname;
+};
+
 const resolveFilePath = async (urlPathname) => {
   const pathname = decodeURIComponent(urlPathname);
-  const sourcePathname = pathname
-    .replace(/^\/sw-demo(?=\/|$)/, '/src/browser')
-    .replace(/^\/app(?=\/|$)/, '/src/app')
-    .replace(/^\/framework(?=\/|$)/, '/src/framework');
+  const sourcePathname = sourcePathnameFor(pathname);
   const requested = sourcePathname.endsWith('/')
     ? path.join(sourcePathname, 'index.html')
     : sourcePathname;
@@ -49,7 +88,7 @@ const resolveFilePath = async (urlPathname) => {
     await fs.access(filePath);
     return filePath;
   } catch {
-    if (pathname.startsWith('/sw-demo/')) {
+    if (!pathname.startsWith('/app/') && !pathname.startsWith('/framework/') && !pathname.startsWith('/assets/')) {
       return path.join(repoRoot, 'src', 'browser', 'index.html');
     }
 
@@ -82,5 +121,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, '127.0.0.1', () => {
-  console.log(`static demo server running at http://127.0.0.1:${port}/sw-demo/`);
+  console.log(`static demo server running at http://127.0.0.1:${port}/`);
 });

@@ -44,10 +44,11 @@
       const unregisterDemoWorker = async () => {
         if (!('serviceWorker' in navigator)) return;
 
+        const demoScope = new URL('./', location.href).href;
         const registrations = await navigator.serviceWorker.getRegistrations();
 
         await Promise.all(registrations
-          .filter((registration) => registration.scope.includes('/sw-demo/'))
+          .filter((registration) => registration.scope === demoScope)
           .map((registration) => registration.unregister()));
         await clearDemoCaches();
       };

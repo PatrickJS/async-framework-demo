@@ -25,6 +25,6 @@ backend-emulation.md
   Browser-demo architecture notes.
 ```
 
-The deployed public path remains `/sw-demo/`, but the tracked source lives here.
+The deployed public path is the site root, but the tracked source lives here.
 Generated MiniWeb package assets under `assets/miniweb/` are ignored and should
 be recreated with `npm run prepare:static` or `npm run build:pages`.

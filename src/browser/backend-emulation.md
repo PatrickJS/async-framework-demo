@@ -1,6 +1,6 @@
 # GitHub Pages Backend Emulation
 
-The GitHub Pages version is static, but the browser installs a service worker that handles demo routes under `/sw-demo/*` with MiniWeb assets generated from the installed `@async/miniweb` package during the Pages build.
+The GitHub Pages version is static, but the browser installs a service worker that handles demo routes from the site root with MiniWeb assets generated from the installed `@async/miniweb` package during the Pages build.
 
 The worker is not a real shared backend. It is a browser-local MiniWeb backend emulator for the demo contract: query-driven pages, partial JSON endpoints, cache counters, resource delays, and stream-like replacement chunks.
 
@@ -14,20 +14,20 @@ sequenceDiagram
   actor User
   participant Page as Browser page
   participant Pages as GitHub Pages static host
-  participant SW as Service worker (/sw-demo/*)
+  participant SW as Service worker
   participant MiniWeb as MiniWeb route graph
   participant Runtime as Shared demo runtime
   participant Cache as Browser-local demo cache
 
-  User->>Page: Open /sw-demo/
-  Page->>Pages: GET /sw-demo/index.html
+  User->>Page: Open /
+  Page->>Pages: GET /index.html
   Pages-->>Page: Static bootstrap HTML
-  Page->>Pages: GET /sw-demo/service-worker.js
+  Page->>Pages: GET /service-worker.js
   Pages-->>Page: Worker module + static imports
-  Page->>SW: register(scope: /sw-demo/)
+  Page->>SW: register(scope: /)
   SW-->>Page: claim controlled pages
 
-  User->>Page: Open /sw-demo/product-cache?cache=page
+  User->>Page: Open /product-cache?cache=page
   Page->>SW: navigation request
   SW->>MiniWeb: web.fetch(request)
   MiniWeb->>Runtime: parse query + render route
@@ -36,13 +36,13 @@ sequenceDiagram
   Runtime-->>SW: HTML + metrics + replacement descriptors
   SW-->>Page: Response(text/html)
 
-  Page->>SW: fetch /sw-demo/_async/partial/ProductCard
+  Page->>SW: fetch /_async/partial/ProductCard
   SW->>MiniWeb: web.fetch(request)
   MiniWeb->>Runtime: render component partial payload
   Runtime-->>SW: JSON payload with HTML, data, context, template ref
   SW-->>Page: Response(application/json)
 
-  Page->>SW: fetch /sw-demo/_async/partial/edge-segment
+  Page->>SW: fetch /_async/partial/edge-segment
   SW-->>Page: edge-like JSON payload
 ```
 
@@ -50,12 +50,10 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-  A["Request URL"] --> B{"Starts with /sw-demo/?"}
-  B -- "No" --> Z["Pass through to static host"]
-  B -- "Yes" --> C{"Static worker asset?"}
+  A["Request URL"] --> C{"Static worker asset?"}
   C -- "index.html, service-worker.js, miniweb.js, router.js, assets/*, docs" --> Z
   C -- "No" --> D{"Reset URL?"}
-  D -- "/sw-demo/?nosw=1 or /sw-demo/reset" --> E["Return reset HTML that unregisters worker"]
+  D -- "/?nosw=1 or /reset" --> E["Return reset HTML that unregisters worker"]
   D -- "No" --> F{"Partial endpoint?"}
   F -- "ProductCard" --> G["Return component partial JSON"]
   F -- "edge-segment" --> H["Return edge segment JSON"]
@@ -75,8 +73,8 @@ flowchart TD
 | Query-param rendering | Real server request | Worker navigation request |
 | MiniWeb runtime mode | N/A | `same-realm` by default, `runtime=iframe` opt-in |
 | In-memory cache | Node process memory | Browser service-worker memory |
-| Partial endpoint | `/_async/partial/ProductCard` | `/sw-demo/_async/partial/ProductCard` |
-| Edge endpoint | `/_async/partial/edge-segment` | `/sw-demo/_async/partial/edge-segment` |
+| Partial endpoint | `/_async/partial/ProductCard` | `/_async/partial/ProductCard` |
+| Edge endpoint | `/_async/partial/edge-segment` | `/_async/partial/edge-segment` |
 | Delays | Node timers | Worker timers |
 | Streaming | Node HTTP response stream | Worker `ReadableStream` response |
 | Shared backend state | Yes, per Node process | No, per browser install |
@@ -102,11 +100,11 @@ flowchart LR
 
   subgraph Pages["GitHub Pages"]
     PagesHost["Static asset hosting only"]
-    E["sw-demo/assets/miniweb/*.js"]
+    E["assets/miniweb/*.js"]
   end
 
   subgraph Browser["User browser"]
-    H["Service worker scope: /sw-demo/"]
+    H["Service worker scope: site root"]
     I["Demo pages"]
     J["Browser-local cache state"]
   end
@@ -136,7 +134,7 @@ That maps cleanly to MiniWeb plus a service worker because the worker can pass a
 
 Use either path:
 
-- `/sw-demo/debug` checks the installed controller, worker version, and partial endpoint responses.
-- `/sw-demo/?nosw=1` unregisters the worker and clears demo caches.
+- `/debug` checks the installed controller, worker version, and partial endpoint responses.
+- `/?nosw=1` unregisters the worker and clears demo caches.
 
 When changing worker code, bump `DEMO_SW_VERSION` in `src/browser/router.js` so the debug page can show which worker version is active.

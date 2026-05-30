@@ -3,7 +3,8 @@ export const ROUTES = {
   favicon: '/favicon.ico',
   productPartial: '/_async/partial/ProductCard',
   edgeSegmentPartial: '/_async/partial/edge-segment',
-  browserBase: '/sw-demo',
+  browserBase: '',
+  browserProjectBase: '/async-framework-demo',
   browserDebug: '/debug',
   browserReset: '/reset',
 };
@@ -23,24 +24,25 @@ export const appSlugFromPathname = (pathname) => {
 };
 
 export const getBrowserDemoRoute = (pathname, basePath = ROUTES.browserBase) => {
-  const basePathMarker = `${basePath}/`;
+  const projectBaseMarker = `${ROUTES.browserProjectBase}/`;
 
-  if (pathname === basePath || pathname.endsWith(basePath)) {
+  if (basePath && (pathname === basePath || pathname.startsWith(`${basePath}/`))) {
     return {
-      basePath: pathname,
-      localPath: '/',
+      basePath,
+      localPath: pathname.slice(basePath.length) || '/',
     };
   }
 
-  const markerIndex = pathname.indexOf(basePathMarker);
-
-  if (markerIndex === -1) return null;
-
-  const resolvedBasePath = pathname.slice(0, markerIndex + basePath.length);
+  if (pathname === ROUTES.browserProjectBase || pathname.startsWith(projectBaseMarker)) {
+    return {
+      basePath: ROUTES.browserProjectBase,
+      localPath: pathname.slice(ROUTES.browserProjectBase.length) || '/',
+    };
+  }
 
   return {
-    basePath: resolvedBasePath,
-    localPath: pathname.slice(resolvedBasePath.length) || '/',
+    basePath: '',
+    localPath: pathname || '/',
   };
 };
 

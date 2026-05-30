@@ -27,15 +27,15 @@ npm run start:static
 Open:
 
 ```txt
-http://127.0.0.1:4328/sw-demo/
+http://127.0.0.1:4328/
 ```
 
 The first load installs the deployed `service-worker.js`, then the worker sends
-`/sw-demo/*` demo routes through static MiniWeb assets generated from the
+site-root demo routes through static MiniWeb assets generated from the
 installed `@async/miniweb` package. Use the **Reset service worker** link or
-visit `/sw-demo/?nosw=1` to unregister the worker and clear demo caches before
+visit `/?nosw=1` to unregister the worker and clear demo caches before
 debugging stale behavior.
-Add `runtime=iframe` to a `/sw-demo/*` demo URL to route the MiniWeb app through
+Add `runtime=iframe` to any demo URL to route the MiniWeb app through
 its iframe runtime boundary instead of the default same-realm runtime.
 
 ## Scripts
@@ -60,7 +60,7 @@ opening a browser.
 ## GitHub Pages
 
 The Pages workflow builds from `package-lock.json`, runs the smoke checks, then
-copies the installed MiniWeb browser assets into `dist-pages/sw-demo/assets/miniweb`
+copies the installed MiniWeb browser assets into `dist-pages/assets/miniweb`
 for deployment. The generated asset directory is ignored locally and is not
 committed. In the repository settings, set Pages to deploy from **GitHub
 Actions**.
