@@ -48,6 +48,21 @@ const waitResult = runJson([
 assert(waitResult.renderMode === 'wait', 'expected wait render mode');
 assert(waitResult.metrics.blockingResources > 0, 'expected blocking resources in wait smoke');
 
+const jsxResult = runJson([
+  '--once',
+  '--app=jsx-closure-extraction',
+  '--cache=component',
+  '--mode=wait',
+  '--delay=0',
+  '--runs=1',
+  '--clear=1',
+]);
+
+assert(jsxResult.app === 'jsx-closure-extraction', 'expected JSX closure extraction app in smoke');
+assert(jsxResult.renderMode === 'wait', 'expected JSX app wait render mode');
+assert(jsxResult.metrics.componentExecutions > 0, 'expected JSX app component renders');
+assert(jsxResult.metrics.storeCacheWrites > 0, 'expected JSX app cache writes');
+
 const port = 4327;
 const server = spawn('node', ['src/server/node.js', `--port=${port}`], {
   cwd: repoRoot,

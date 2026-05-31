@@ -2,7 +2,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { optimizeApp } from '../framework/simple-optimizer.js';
+import { optimizeApp } from '../compiler/simple-optimizer.js';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const appsDir = path.join(rootDir, 'examples');
@@ -15,7 +15,10 @@ const readAppDirs = async () => {
     if (!entry.isDirectory()) continue;
     const appDir = path.join(appsDir, entry.name);
     try {
-      await fs.access(path.join(appDir, 'component.js'));
+      await Promise.any([
+        fs.access(path.join(appDir, 'component.js')),
+        fs.access(path.join(appDir, 'component.tsx')),
+      ]);
       dirs.push(appDir);
     } catch {
       // Ignore helper folders.
@@ -52,7 +55,10 @@ const run = async () => {
 
   for (const appDir of filtered) {
     const result = await optimizeApp(appDir);
-    console.log(`generated ${path.basename(result.appDir)} -> generated/{server_segment,server_product,component_model,component_controller,component_template}.js`);
+    const closureSummary = result.closureManifest
+      ? ` with ${result.closureManifest.accepted.length} validated closure boundaries`
+      : '';
+    console.log(`generated ${path.basename(result.appDir)} from ${result.sourceFile} -> generated/{server_segment,server_product,component_model,component_controller,component_template}.js${closureSummary}`);
   }
 };
 

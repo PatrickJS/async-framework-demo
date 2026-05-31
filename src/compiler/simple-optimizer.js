@@ -1,6 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+  parseProjectFiles,
+  validateBoundaryManifestForProject,
+} from './closure-pipeline.js';
 
 const DEFAULT_PRODUCTS = {
   '1': { title: 'Keyboard', price: '$199', proPrice: '$179' },
@@ -21,7 +25,7 @@ const DEFAULT_SPEC = {
 
 const toJson = (value) => JSON.stringify(value, null, 2);
 
-const segmentServerFile = () => `// GENERATED FILE. Source: ../component.js
+const segmentServerFile = (sourceFile) => `// GENERATED FILE. Source: ../${sourceFile}
 export const SegmentModel = async ({ segment }) => {
   return {
     plan: segment === 'pro' ? 'pro' : 'free',
@@ -29,7 +33,7 @@ export const SegmentModel = async ({ segment }) => {
 };
 `;
 
-const productServerFile = (spec) => `// GENERATED FILE. Source: ../component.js
+const productServerFile = (spec, sourceFile) => `// GENERATED FILE. Source: ../${sourceFile}
 const PRODUCTS = ${toJson(spec.products)};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -54,14 +58,14 @@ export const ProductModel = async ({ productId }, context) => {
 };
 `;
 
-const modelFile = () => `// GENERATED FILE. Source: ../component.js
+const modelFile = (sourceFile) => `// GENERATED FILE. Source: ../${sourceFile}
 // This file keeps the simple "component_model.js" entrypoint while the server
 // functions are physically split into separate files.
 export { SegmentModel } from './server_segment.js';
 export { ProductModel } from './server_product.js';
 `;
 
-const controllerFile = () => `// GENERATED FILE. Source: ../component.js
+const controllerFile = (sourceFile) => `// GENERATED FILE. Source: ../${sourceFile}
 // The controller is the generated async edge from component props to server data.
 // It is the readable generated edge for a resource-binding asyncResource call.
 export const ProductCardController = (props, runtime) => {
@@ -71,7 +75,7 @@ export const ProductCardController = (props, runtime) => {
 };
 `;
 
-const templateFile = (spec) => `// GENERATED FILE. Source: ../component.js
+const templateFile = (spec, sourceFile) => `// GENERATED FILE. Source: ../${sourceFile}
 import { escapeHtml } from '../../../../framework/html.js';
 import { createEffect, createSignal, serializeSignalGraph } from '../../../../framework/signals.js';
 
@@ -174,8 +178,8 @@ export const ProductListTemplate = ({
 };
 `;
 
-const loadGenerationSpec = async (componentPath) => {
-  const moduleUrl = `${pathToFileURL(componentPath).href}?v=${Date.now()}`;
+const loadGenerationSpec = async (configPath) => {
+  const moduleUrl = `${pathToFileURL(configPath).href}?v=${Date.now()}`;
   const mod = await import(moduleUrl);
   return {
     ...DEFAULT_SPEC,
@@ -187,20 +191,70 @@ const loadGenerationSpec = async (componentPath) => {
   };
 };
 
+const fileExists = async (filePath) => {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const readSourceFiles = async (appDir) => {
+  const entries = await fs.readdir(appDir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    if (!['.tsx', '.jsx', '.ts', '.js'].includes(path.extname(entry.name))) continue;
+    if (entry.name === 'component.config.js' || entry.name === 'app.js') continue;
+
+    const filename = path.join(appDir, entry.name);
+    files.push({
+      filename,
+      source: await fs.readFile(filename, 'utf8'),
+    });
+  }
+
+  return files.sort((left, right) => left.filename.localeCompare(right.filename));
+};
+
+const validateClosureManifest = async (appDir) => {
+  const componentTsxPath = path.join(appDir, 'component.tsx');
+  const manifestPath = path.join(appDir, 'closure-boundaries.json');
+  if (!await fileExists(componentTsxPath)) {
+    return null;
+  }
+  if (!await fileExists(manifestPath)) {
+    throw new Error(`Missing closure-boundaries.json for JSX source at ${componentTsxPath}`);
+  }
+
+  const project = parseProjectFiles(await readSourceFiles(appDir), appDir);
+  const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+  return validateBoundaryManifestForProject(project, manifest);
+};
+
 export const optimizeApp = async (appDir) => {
-  const componentPath = path.join(appDir, 'component.js');
+  const hasComponentTsx = await fileExists(path.join(appDir, 'component.tsx'));
+  const sourceFile = hasComponentTsx ? 'component.tsx' : 'component.js';
+  const configPath = hasComponentTsx
+    ? path.join(appDir, 'component.config.js')
+    : path.join(appDir, 'component.js');
   const generatedDir = path.join(appDir, 'generated');
-  const spec = await loadGenerationSpec(componentPath);
+  const spec = await loadGenerationSpec(configPath);
+  const closureManifest = await validateClosureManifest(appDir);
 
   await fs.mkdir(generatedDir, { recursive: true });
-  await fs.writeFile(path.join(generatedDir, 'server_segment.js'), segmentServerFile(), 'utf8');
-  await fs.writeFile(path.join(generatedDir, 'server_product.js'), productServerFile(spec), 'utf8');
-  await fs.writeFile(path.join(generatedDir, 'component_model.js'), modelFile(spec), 'utf8');
-  await fs.writeFile(path.join(generatedDir, 'component_controller.js'), controllerFile(spec), 'utf8');
-  await fs.writeFile(path.join(generatedDir, 'component_template.js'), templateFile(spec), 'utf8');
+  await fs.writeFile(path.join(generatedDir, 'server_segment.js'), segmentServerFile(sourceFile), 'utf8');
+  await fs.writeFile(path.join(generatedDir, 'server_product.js'), productServerFile(spec, sourceFile), 'utf8');
+  await fs.writeFile(path.join(generatedDir, 'component_model.js'), modelFile(sourceFile), 'utf8');
+  await fs.writeFile(path.join(generatedDir, 'component_controller.js'), controllerFile(sourceFile), 'utf8');
+  await fs.writeFile(path.join(generatedDir, 'component_template.js'), templateFile(spec, sourceFile), 'utf8');
 
   return {
     appDir,
     spec,
+    sourceFile,
+    closureManifest,
   };
 };

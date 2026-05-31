@@ -1,8 +1,8 @@
 # Async Framework Demo
 
-A small Node.js demo for async rendering ideas: cacheable server resources, generated component output, request dedupe, partial payloads, streaming, and resume metadata.
+A small Node.js demo for async rendering ideas: cacheable server resources, generated component output, request dedupe, partial payloads, streaming, resume metadata, and markerless JSX closure extraction.
 
-The code is intentionally small and readable. It is not a production framework. It shows how source components can be split into generated model/controller/template files so data, render code, and final HTML can be cached independently.
+The code is intentionally small and readable. It is not a production framework. It shows how source components can be split into generated model/controller/template files so data, render code, and final HTML can be cached independently. The JSX closure example keeps normal `useAsync(...)`, `server(...)`, and JSX callback props in author source; a deterministic compiler pass infers boundary intent from prop-forwarding evidence.
 
 ## Quick Start
 
@@ -45,17 +45,23 @@ npm run generate
 npm run prepare:static
 npm run build:pages
 npm run check
+npm run closure:poc
+npm run closure:scenarios
 npm run smoke
 npm run smoke:sw
+npm run verify
 ```
 
 `generate` rebuilds every app's readable generated output. `prepare:static`
 creates ignored local MiniWeb browser assets from the installed
 `@async/miniweb` package. `build:pages` creates the clean `dist-pages/` artifact
 for GitHub Pages, including those generated assets. `check` syntax-checks all
-JavaScript files. `smoke` runs stream, wait, and component-partial CLI checks.
-`smoke:sw` checks the MiniWeb-backed service-worker route handler without
-opening a browser.
+JavaScript files. `closure:poc` prints the parser-to-manifest-to-closure report
+for the JSX example. `closure:scenarios` runs deterministic parser-backed
+boundary scenarios. `smoke` runs stream, wait, JSX, and component-partial CLI
+checks. `smoke:sw` checks the MiniWeb-backed service-worker route handler
+without opening a browser. `closure:ollama` and `bench:ollama` are optional
+local-model workflows and are not part of normal verification.
 
 ## GitHub Pages
 
@@ -70,6 +76,9 @@ Actions**.
 ```txt
 src/app/
   route table, app registry, cache config, optimizer CLI, and examples
+
+src/compiler/
+  parser-first closure extraction, manifest validation, optimizer output, and optional Ollama workflow
 
 src/server/
   local Node adapter
@@ -102,11 +111,33 @@ src/app/examples/product-cache/
 - `component_controller.js`: async edge from props to the resource
 - `component_template.js`: deterministic HTML rendering from props, resource state, and resume context
 
+The JSX closure example uses the newer source convention:
+
+```txt
+src/app/examples/jsx-closure-extraction/
+  component.tsx
+  component.config.js
+  closure-boundaries.json
+  generated/
+    server_segment.js
+    server_product.js
+    component_controller.js
+    component_template.js
+    component_model.js
+```
+
+`component.tsx` is parser-only author source. `closure-boundaries.json` stores
+accepted event boundaries plus compiler-derived evidence paths. Generation
+validates that manifest before emitting runtime files.
+
 ## Examples
 
 ```txt
 /product-cache
   server resource cache + component HTML cache
+
+/jsx-closure-extraction
+  normal JSX source + markerless closure manifest + generated runtime files
 
 /streaming
   pending shell first, resolved chunks later in one response

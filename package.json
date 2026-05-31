@@ -11,8 +11,13 @@
     "build:pages": "node scripts/build-pages.js",
     "generate": "node src/app/generate.js",
     "check": "find . -type f -name '*.js' -not -path './.git/*' -not -path './node_modules/*' -not -path './dist-pages/*' -not -path './src/browser/assets/miniweb/*' -print0 | xargs -0 -n 1 node --check",
+    "closure:poc": "node scripts/closure-poc.js",
+    "closure:scenarios": "node scripts/closure-scenarios.js",
+    "closure:ollama": "node scripts/closure-ollama.js",
+    "bench:ollama": "node scripts/bench-ollama.js",
     "smoke": "node scripts/smoke.js",
-    "smoke:sw": "npm run prepare:static && node scripts/sw-smoke.js"
+    "smoke:sw": "npm run prepare:static && node scripts/sw-smoke.js",
+    "verify": "npm run generate && npm run check && node scripts/closure-tests.js && npm run closure:scenarios && npm run smoke && npm run smoke:sw"
   },
   "license": "MIT",
   "dependencies": {

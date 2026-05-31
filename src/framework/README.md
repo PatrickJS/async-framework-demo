@@ -24,12 +24,10 @@ html.js
 signals.js
   Tiny signal/effect runtime used by generated templates.
 
-simple-optimizer.js
-  Turns app component metadata into readable generated files.
-
 ssr.js
   Renders app routes, component partials, timing metrics, and resume context.
 ```
 
 Keep this layer adapter-neutral. Node-specific behavior belongs in
-`src/server/`, and service-worker/MiniWeb behavior belongs in `src/browser/`.
+`src/server/`, service-worker/MiniWeb behavior belongs in `src/browser/`, and
+source parsing/generation belongs in `src/compiler/`.

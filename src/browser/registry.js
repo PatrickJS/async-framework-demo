@@ -4,6 +4,12 @@ import * as productCacheProduct from '../app/examples/product-cache/generated/se
 import * as productCacheController from '../app/examples/product-cache/generated/component_controller.js';
 import * as productCacheTemplate from '../app/examples/product-cache/generated/component_template.js';
 
+import jsxClosureExtractionSource from '../app/examples/jsx-closure-extraction/app.js';
+import * as jsxClosureExtractionSegment from '../app/examples/jsx-closure-extraction/generated/server_segment.js';
+import * as jsxClosureExtractionProduct from '../app/examples/jsx-closure-extraction/generated/server_product.js';
+import * as jsxClosureExtractionController from '../app/examples/jsx-closure-extraction/generated/component_controller.js';
+import * as jsxClosureExtractionTemplate from '../app/examples/jsx-closure-extraction/generated/component_template.js';
+
 import streamingSource from '../app/examples/streaming/app.js';
 import * as streamingSegment from '../app/examples/streaming/generated/server_segment.js';
 import * as streamingProduct from '../app/examples/streaming/generated/server_product.js';
@@ -74,6 +80,13 @@ const productCache = withStaticGeneratedModules(productCacheSource, {
   template: productCacheTemplate,
 });
 
+const jsxClosureExtraction = withStaticGeneratedModules(jsxClosureExtractionSource, {
+  segment: jsxClosureExtractionSegment,
+  product: jsxClosureExtractionProduct,
+  controller: jsxClosureExtractionController,
+  template: jsxClosureExtractionTemplate,
+});
+
 const streaming = withStaticGeneratedModules(streamingSource, {
   segment: streamingSegment,
   product: streamingProduct,
@@ -111,6 +124,7 @@ const personalizedPending = withStaticGeneratedModules(personalizedPendingSource
 
 export const demoApps = [
   productCache,
+  jsxClosureExtraction,
   streaming,
   componentPartials,
   segmentVary,

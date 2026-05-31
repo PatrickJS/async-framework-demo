@@ -8,6 +8,10 @@ This folder contains the source for the proof-of-concept demo.
 app/
   Demo route table, app registry, cache config, optimizer CLI, and examples.
 
+compiler/
+  Parser-first closure extraction, manifest validation, optimizer output, and
+  optional local-model proposal helpers.
+
 browser/
   Static bootstrap page, service worker, MiniWeb bridge, and browser docs.
 

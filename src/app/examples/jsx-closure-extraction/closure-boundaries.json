@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "components": {
+    "ProductActions": {
+      "props": {
+        "onBuy": "event"
+      },
+      "evidence": {
+        "onBuy": [
+          "ProductActions.onBuy",
+          "button.onClick"
+        ]
+      }
+    },
+    "ProductCard": {
+      "props": {
+        "onBuy": "event",
+        "onSelect": "event"
+      },
+      "evidence": {
+        "onBuy": [
+          "ProductCard.onBuy",
+          "ProductActions.onBuy",
+          "button.onClick"
+        ],
+        "onSelect": [
+          "ProductCard.onSelect",
+          "article.onClick"
+        ]
+      }
+    },
+    "ProductSearchForm": {
+      "props": {
+        "onSubmit": "event"
+      },
+      "evidence": {
+        "onSubmit": [
+          "ProductSearchForm.onSubmit",
+          "form.onSubmit"
+        ]
+      }
+    }
+  }
+}

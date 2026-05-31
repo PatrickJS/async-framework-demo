@@ -38,6 +38,11 @@ assert.match(page, /data-demo-app="product-cache"/);
 assert.match(page, /cache level<\/strong><br>component/);
 assert.match(page, /Current in-memory cache sizes/);
 
+const jsxPage = await readText('/jsx-closure-extraction?mode=wait&cache=component&delay=0&clear=1');
+assert.match(jsxPage, /data-demo-app="jsx-closure-extraction"/);
+assert.match(jsxPage, /JSX Closure Extraction/);
+assert.match(jsxPage, /Parser Keyboard/);
+
 const iframePage = await readText('/product-cache?runtime=iframe&mode=wait&cache=component&delay=0&clear=1');
 assert.match(iframePage, /MiniWeb runtime<\/strong><br>iframe/);
 

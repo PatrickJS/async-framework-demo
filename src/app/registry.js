@@ -1,4 +1,5 @@
 import productCache from './examples/product-cache/app.js';
+import jsxClosureExtraction from './examples/jsx-closure-extraction/app.js';
 import streaming from './examples/streaming/app.js';
 import componentPartials from './examples/component-partials/app.js';
 import segmentVary from './examples/segment-vary/app.js';
@@ -7,6 +8,7 @@ import personalizedPending from './examples/personalized-pending/app.js';
 
 export const demoApps = [
   productCache,
+  jsxClosureExtraction,
   streaming,
   componentPartials,
   segmentVary,

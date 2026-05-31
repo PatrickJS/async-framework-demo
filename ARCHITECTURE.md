@@ -1,10 +1,11 @@
 # Async Framework Demo Architecture
 
-This document explains the three core mechanics in the demo framework:
+This document explains the four core mechanics in the demo framework:
 
 1. out-of-order streaming
 2. closure capturing
 3. file splitting for component and server-resource functions
+4. markerless JSX closure extraction
 
 The goal is readability, not exact parity with a production framework.
 
@@ -106,8 +107,32 @@ The app registry loads those split files directly.
 Code locations:
 
 - registry resource loaders: [src/app/examples/create-product-app.js](src/app/examples/create-product-app.js)
-- optimizer output generator: [src/framework/simple-optimizer.js](src/framework/simple-optimizer.js)
+- optimizer output generator: [src/compiler/simple-optimizer.js](src/compiler/simple-optimizer.js)
 - optimizer CLI: [src/app/generate.js](src/app/generate.js)
+
+## 4) Markerless JSX Closure Extraction
+
+The `jsx-closure-extraction` example uses normal `component.tsx` source with
+plain `useAsync(...)`, `server(...)`, and JSX callback props. It does not use
+`onClick$`, QRL names, or `$` suffixes to mark closure boundaries.
+
+Generation treats TSX as compiler input:
+
+1. parse component declarations and JSX attributes into compact facts
+2. build prop-forwarding edges such as `ProductCard.onBuy -> ProductActions.onBuy`
+3. prove accepted manifest entries reach host event evidence such as `button.onClick`
+4. discover extractable closure sites in parent JSX
+5. emit the same generated runtime files used by every other app
+
+The persisted manifest is app-local:
+
+```txt
+src/app/examples/jsx-closure-extraction/closure-boundaries.json
+```
+
+Normal generation validates that manifest deterministically. Optional Ollama
+scripts can propose manifest patches, but the runtime build path consumes only
+validated source-controlled metadata.
 
 ## Rebuild Generated Files
 

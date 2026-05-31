@@ -14,4 +14,17 @@ generated/
   component_model.js
 ```
 
+The JSX closure extraction app uses the newer convention:
+
+```txt
+component.tsx
+component.config.js
+closure-boundaries.json
+generated/
+```
+
+`component.tsx` is normal author JSX with plain `useAsync(...)` and
+`server(...)` calls. The compiler infers callback intent from prop-forwarding
+evidence and validates `closure-boundaries.json` before generating runtime JS.
+
 The apps are intentionally small. They reuse the same framework runtime and mostly vary the defaults and the story they are trying to show: cache hits, out-of-order streaming, partial payloads, segment vary keys, request dedupe, and pending personalized UI.
